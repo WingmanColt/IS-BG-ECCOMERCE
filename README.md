@@ -1,4 +1,4 @@
-Линк: https://inexus2-001-site5.anytempurl.com/
+Линк: http://inexus2-001-site5.anytempurl.com/
 
 Документация – Онлайн Магазин
 
