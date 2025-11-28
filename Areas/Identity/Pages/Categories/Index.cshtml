@@ -1,0 +1,23 @@
+﻿@page
+@model Categories_IndexModel
+<h1>Categories</h1>
+<a asp-page="Create">Create New Category</a>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Categories)
+        {
+            <tr>
+                <td>@item.Name</td>
+                <td>
+                    <a asp-page="Edit" asp-route-id="@item.Id">Edit</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

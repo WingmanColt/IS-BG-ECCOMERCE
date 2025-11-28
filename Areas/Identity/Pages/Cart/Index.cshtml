@@ -1,0 +1,42 @@
+﻿@page
+@model WebApplication1.Areas.Identity.Pages.Cart.Cart_IndexModel
+
+<h2>Количка</h2>
+
+@if (!Model.Items.Any())
+{
+    <div class="alert alert-info">Количката е празна.</div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead><tr><th>Продукт</th><th>Кол-во</th><th>Ед. цена</th><th>Сума</th><th></th></tr></thead>
+        <tbody>
+        @foreach(var it in Model.Items)
+        {
+            <tr>
+                <td>@it.ProductName</td>
+                <td>@it.Quantity</td>
+                    <td>@it.UnitPrice.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("de-DE"))</td>
+                    <td>@it.LineTotal.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("de-DE"))</td>
+                <td>
+                    <form method="post" asp-page-handler="Remove">
+                        <input type="hidden" name="productId" value="@it.ProductId" />
+                        <button class="btn btn-sm btn-danger">Премахни</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+
+    <h4 class="text-end">Общо: @Model.TotalPrice.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("de-DE"))</h4>
+    <a class="btn btn-primary me-2" asp-page="/Orders/Index">
+        Всички поръчки
+    </a>
+
+    <a class="btn btn-success float-end" asp-page="/Checkout/Index">
+        Завърши поръчката
+    </a>
+
+}

@@ -1,0 +1,48 @@
+﻿@page
+@model WebApplication1.Areas.Identity.Pages.Orders.Orders_IndexModel
+
+<h2>Всички поръчки</h2>
+
+@if (!Model.Orders.Any())
+{
+    <div class="alert alert-info">Все още няма поръчки.</div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Номер</th>
+                <th>Клиент</th>
+                <th>Телефон</th>
+                <th>Имейл</th>
+                <th>Адрес</th>
+                <th>Общо</th>
+                <th>Дата</th>
+                <th>Продукти</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in Model.Orders)
+            {
+                <tr>
+                    <td>@order.Id</td>
+                    <td>@order.CustomerName</td>
+                    <td>@order.Phone</td>
+                    <td>@order.Email</td>
+                    <td>@order.Address</td>
+                    <td>@order.TotalAmount.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("de-DE"))</td>
+                    <td>@order.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                    <td>
+                        <ul>
+                            @foreach (var item in order.Items)
+                            {
+                                <li>@item.Product?.Name x @item.Quantity ( @item.LineTotal.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("de-DE")) )</li>
+                            }
+                        </ul>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

@@ -1,0 +1,50 @@
+﻿@page "{id:int}"
+@model WebApplication1.Areas.Identity.Pages.Products.DetailsModel
+@{
+    ViewData["Title"] = Model.Product?.Name ?? "Детайли за продукта";
+}
+
+<div class="container mt-4">
+
+    <a asp-page="./Index" class="text-decoration-none mb-3 d-inline-block">
+        ← Назад към продуктите
+    </a>
+
+    @if (Model.Product != null)
+    {
+        <div class="row justify-content-center">
+            <div class="col-md-5">
+                <div class="p-2 border rounded shadow-sm bg-white text-center">
+                    <img src="@Model.Product.ImageUrl"
+                         class="img-fluid rounded product-img"
+                         alt="@Model.Product.Name"
+                         style="max-height: 420px; object-fit: cover;" />
+                </div>
+            </div>
+            <div class="col-md-5">
+                <h2>@Model.Product.Name</h2>
+
+                @if (Model.Product.Category != null)
+                {
+                    <p class="text-muted">
+                        Категория:
+                        <strong>@Model.Product.Category.Name</strong>
+                    </p>
+                }
+
+                <h4 class="text-success fw-bold my-3">
+                    @Model.Product.Price.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("de-DE"))
+                </h4>
+
+                @if (!string.IsNullOrWhiteSpace(Model.Product.Description))
+                {
+                    <p class="mb-4">@Model.Product.Description</p>
+                }
+
+                <button class="btn btn-success btn-lg w-100" onclick="addToCart(@Model.Product.Id)">
+                        <i class="bi bi-cart-plus"></i> Добави в количката
+                    </button>
+            </div>
+        </div>
+    }
+</div>

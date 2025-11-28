@@ -1,0 +1,28 @@
+﻿@page
+@model ProductsCreateModel
+
+<h1>Create Product</h1>
+
+<form method="post">
+    <div>
+        <label>Name</label>
+        <input asp-for="Product.Name" class="form-control" />
+    </div>
+
+    <div>
+        <label>Description</label>
+        <input asp-for="Product.Description" class="form-control" />
+    </div>
+
+    <div>
+        <label>Price</label>
+        <input asp-for="Product.Price" class="form-control" />
+    </div>
+
+    <div>
+        <label>Category</label>
+        <select asp-for="Product.CategoryId" asp-items="Model.CategoryList" class="form-control"></select>
+    </div>
+
+    <button type="submit" class="btn btn-success mt-3">Save</button>
+</form>

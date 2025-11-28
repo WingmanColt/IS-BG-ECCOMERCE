@@ -1,0 +1,169 @@
+﻿@using WebApplication1.Services
+@inject ICartService CartService
+
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - Online Shop</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <link href="~/css/site.css" rel="stylesheet" />
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark p-3">
+        <div class="container-fluid">
+            <a class="navbar-brand" asp-page="/Index">Online Shop</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" asp-page="/Products/Index">Продукти</a></li>
+                    <li class="nav-item"><a class="nav-link" asp-page="/Categories/Index">Категории</a></li>
+                </ul>
+
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link position-relative" href="#" id="cartDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-cart3 fs-4"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cartCounter">0</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end p-2" aria-labelledby="cartDropdown" style="min-width: 350px;">
+                            <li id="cartDropdownContent">
+                                <p class="text-center text-muted mb-0">Количката е празна</p>
+                            </li>
+                            <li><hr class="dropdown-divider" /></li>
+                            <li>
+                                <a class="dropdown-item text-center btn btn-success" asp-page="/Cart/Index">Виж количката</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        @RenderBody()
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
+
+    @RenderSection("Scripts", required: false)
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+
+        async function updateCart() {
+            try {
+                const respCount = await fetch('/api/Cart/Count');
+                if (!respCount.ok) throw new Error(`HTTP error! status: ${respCount.status}`);
+                const count = await respCount.json();
+                document.getElementById('cartCounter').innerText = count;
+
+                const content = document.getElementById('cartDropdownContent');
+
+                if (count === 0) {
+                    content.innerHTML = '<p class="text-center text-muted mb-0">Количката е празна</p>';
+                    return;
+                }
+
+                const itemsResp = await fetch('/api/Cart/ItemsPreview');
+                if (!itemsResp.ok) throw new Error(`HTTP error! status: ${itemsResp.status}`);
+                const items = await itemsResp.json();
+
+                if (!Array.isArray(items) || items.length === 0) {
+                    content.innerHTML = '<p class="text-center text-muted mb-0">Количката е празна</p>';
+                    return;
+                }
+
+                let html = '';
+                items.forEach((i, index) => {
+                    const productName = i?.productName || 'Неизвестен продукт';
+                    const quantity = i?.quantity ?? 1;
+                    const unitPrice = i?.unitPrice ?? 0;
+                    const lineTotal = i?.lineTotal ?? (unitPrice * quantity);
+                    const imageUrl = i?.imageUrl || '/images/default.png';
+
+                    html += `
+                       <div class="cart-item d-flex align-items-center mb-2 p-1 position-relative" data-product-id="${i.productId}">
+                        <img src="${imageUrl}" alt="${productName}" class="cart-item-img">
+                        <div class="cart-item-text flex-grow-1 ms-2">
+                            ${productName} x${quantity}
+                        </div>
+                        <div class="cart-item-right d-flex align-items-center">
+                            <span class="cart-item-price">${lineTotal.toFixed(2)} €</span>
+                            <i class="bi bi-x-circle cart-item-delete ms-2"></i>
+                        </div>
+                    </div>`;
+                });
+
+                content.innerHTML = html;
+
+        content.querySelectorAll('.cart-item-delete').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const itemDiv = e.target.closest('.cart-item');
+                const productId = itemDiv.dataset.productId;
+
+                const resp = await fetch('/api/Cart/Remove', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ProductId: productId })
+                });
+
+                if (resp.ok) {
+                    const data = await resp.json();
+                    showToast(`Продуктът е премахнат от количката`);
+                    updateCart();
+                }
+            });
+        });
+
+            } catch (e) {
+                console.error("Грешка при обновяване на количката:", e);
+                document.getElementById('cartDropdownContent').innerHTML = '<p class="text-center text-danger mb-0">Грешка при зареждане на количката</p>';
+            }
+        }
+
+        function showToast(message) {
+            const container = document.getElementById('toastContainer');
+            const toastEl = document.createElement('div');
+            toastEl.className = 'toast align-items-center text-bg-success border-0';
+            toastEl.role = 'alert';
+            toastEl.ariaLive = 'assertive';
+            toastEl.ariaAtomic = 'true';
+            toastEl.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">${message}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>`;
+            container.appendChild(toastEl);
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+            toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
+        }
+
+        async function addToCart(productId) {
+            const response = await fetch('/api/Cart/Add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ProductId: productId })
+            });
+            const data = await response.json();
+            showToast(`${data.productName} е добавен в количката!`);
+            updateCart();
+        }
+
+
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateCart();
+        });
+    </script>
+</body>
+</html>
